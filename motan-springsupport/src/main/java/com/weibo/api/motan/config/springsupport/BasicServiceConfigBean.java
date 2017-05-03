@@ -58,8 +58,11 @@ public class BasicServiceConfigBean extends BasicServiceInterfaceConfig implemen
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        //获取配置中<motan:protocol>标签的id值，返回如：pro1,pro2,...
         String protocol = ConfigUtil.extractProtocols(getExport());
+        //获取配置中所有<motan:regitry>配置的Bean对象
         setRegistries(extractRegistries(registryNames, beanFactory));
+        //获取配置中所有<motan:protocol>配置的Bean对象
         setProtocols(extractProtocols(protocol, beanFactory));
     }
 
