@@ -79,6 +79,7 @@ public class RefererInvocationHandler<T> implements InvocationHandler {
         interfaceName = MotanFrameworkUtil.removeAsyncSuffix(clz.getName());
     }
 
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (isLocalMethod(method)) {
             if ("toString".equals(method.getName())) {

@@ -52,7 +52,7 @@ public class AbstractInterfaceConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 4776516803466933310L;
 
-    // 暴露、使用的协议，暴露可以使用多种协议，但client只能用一种协议进行访问，原因是便于client的管理
+    // 暴露使用的协议，暴露可以使用多种协议，但client只能用一种协议进行访问，原因是便于client的管理
     protected List<ProtocolConfig> protocols;
 
     // 注册中心的配置列表
@@ -320,6 +320,10 @@ public class AbstractInterfaceConfig extends AbstractConfig {
         this.codec = codec;
     }
 
+    /**
+     * 解析registries保存的注册中心的信息，构造成URL列表返回
+     * @return
+     */
     protected List<URL> loadRegistryUrls() {
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
@@ -329,6 +333,7 @@ public class AbstractInterfaceConfig extends AbstractConfig {
                     address = NetUtils.LOCALHOST + ":" + MotanConstants.DEFAULT_INT_VALUE;
                 }
                 Map<String, String> map = new HashMap<String, String>();
+                //将config的属性放入map中
                 config.appendConfigParams(map);
 
                 map.put(URLParamType.application.getName(), getApplication());
@@ -339,8 +344,9 @@ public class AbstractInterfaceConfig extends AbstractConfig {
                 if (!map.containsKey(URLParamType.protocol.getName())) {
                     if (address.contains("://")) {
                         map.put(URLParamType.protocol.getName(), address.substring(0, address.indexOf("://")));
+                    }else {
+                        map.put(URLParamType.protocol.getName(), MotanConstants.REGISTRY_PROTOCOL_LOCAL);
                     }
-                    map.put(URLParamType.protocol.getName(), MotanConstants.REGISTRY_PROTOCOL_LOCAL);
                 }
                 // address内部可能包含多个注册中心地址
                 List<URL> urls = UrlUtils.parseURLs(address, map);

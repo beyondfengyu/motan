@@ -135,8 +135,15 @@ public class ProtocolFilterDecorator implements Protocol {
         return lastRef;
     }
 
+    /**
+     * 使用装饰者模式，增加Filter调用链
+     * @param provider
+     * @param url
+     * @param <T>
+     * @return
+     */
     private <T> Provider<T> decorateWithFilter(Provider<T> provider, URL url) {
-        List<Filter> filters = getFilters(url, MotanConstants.NODE_TYPE_SERVICE);
+        List<Filter> filters = getFilters(url, "access");
         if (filters == null || filters.size() == 0) {
             return provider;
         }
@@ -147,6 +154,7 @@ public class ProtocolFilterDecorator implements Protocol {
             lastProvider = new Provider<T>() {
                 @Override
                 public Response call(Request request) {
+                    // 增加Filter链调用
                     return f.filter(lp, request);
                 }
 

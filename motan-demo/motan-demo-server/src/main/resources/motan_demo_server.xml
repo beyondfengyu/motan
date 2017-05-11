@@ -23,6 +23,7 @@
 
     <!-- 业务具体实现类 -->
     <bean id="motanDemoServiceImpl" class="com.weibo.motan.demo.server.MotanDemoServiceImpl"/>
+    <bean id="motanDemoServiceImpl2" class="com.weibo.motan.demo.server.MotanDemoServiceImpl2"/>
 
     <!-- 注册中心配置 使用不同注册中心需要依赖对应的jar包。如果不使用注册中心，可以把check属性改为false，忽略注册失败。-->
     <motan:registry regProtocol="local" name="registry" />

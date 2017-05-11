@@ -255,7 +255,12 @@ public class MotanFrameworkUtil {
         local.setRegProtocol("local");
         return local;
     }
-    
+
+    /**
+     *
+     * @param path
+     * @return
+     */
     public static String removeAsyncSuffix(String path){
         if(path != null && path.endsWith(MotanConstants.ASYNC_SUFFIX)){
             return path.substring(0, path.length() - MotanConstants.ASYNC_SUFFIX.length());

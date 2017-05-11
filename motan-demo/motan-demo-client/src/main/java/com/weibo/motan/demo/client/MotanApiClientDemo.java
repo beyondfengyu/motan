@@ -20,6 +20,7 @@ import com.weibo.api.motan.config.ProtocolConfig;
 import com.weibo.api.motan.config.RefererConfig;
 import com.weibo.api.motan.config.RegistryConfig;
 import com.weibo.motan.demo.service.MotanDemoService;
+import com.weibo.motan.demo.service.MotanDemoService2;
 
 public class MotanApiClientDemo {
 
@@ -54,7 +55,7 @@ public class MotanApiClientDemo {
 
         // 使用服务
         MotanDemoService service = motanDemoServiceReferer.getRef();
-        System.out.println(service.hello("motan"));
+        System.out.println(service.hello("motan3333"));
 
         System.exit(0);
     }

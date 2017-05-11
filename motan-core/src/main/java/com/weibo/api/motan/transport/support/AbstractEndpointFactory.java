@@ -68,7 +68,7 @@ import com.weibo.api.motan.util.MotanFrameworkUtil;
  * @version 创建时间：2013-6-5
  * 
  */
-public abstract class AbstractEndpointFactory implements EndpointFactory {
+public abstract class  AbstractEndpointFactory implements EndpointFactory {
 
     /** 维持share channel 的service列表 **/
     protected Map<String, Server> ipPort2ServerShareChannel = new HashMap<String, Server>();

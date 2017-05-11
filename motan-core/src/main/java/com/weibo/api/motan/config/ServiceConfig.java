@@ -111,15 +111,18 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             LoggerUtil.warn(String.format("%s has already been expoted, so ignore the export request!", interfaceClass.getName()));
             return;
         }
-
+        // 检查接口类是否正确，以及方法Bean列表是否对应接口类方法
         checkInterfaceAndMethods(interfaceClass, methods);
-
+        // 解析RegisteryConfig类，获取注册相关信息存储到URL列表
+        // 一个服务可能在多个注册中心注册
         List<URL> registryUrls = loadRegistryUrls();
         if (registryUrls == null || registryUrls.size() == 0) {
             throw new IllegalStateException("Should set registry config for service:" + interfaceClass.getName());
         }
 
         Map<String, Integer> protocolPorts = getProtocolAndPort();
+
+        // 此处可以看出，一个服务可以在多种协议中暴露，只要协议的ID等于Service暴露的协议名
         for (ProtocolConfig protocolConfig : protocols) {
             Integer port = protocolPorts.get(protocolConfig.getId());
             if (port == null) {
@@ -152,6 +155,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             protocolName = URLParamType.protocol.getValue();
         }
 
+        // 获取本机的IP地址
         String hostAddress = host;
         if (StringUtils.isBlank(hostAddress) && basicService != null) {
             hostAddress = basicService.getHost();
@@ -165,9 +169,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         map.put(URLParamType.nodeType.getName(), MotanConstants.NODE_TYPE_SERVICE);
         map.put(URLParamType.refreshTimestamp.getName(), String.valueOf(System.currentTimeMillis()));
 
+        // 把protocolConfig、basicService、extConfig、this的属性及值放入map中
         collectConfigParams(map, protocolConfig, basicService, extConfig, this);
         collectMethodConfigParams(map, this.getMethods());
 
+        // 服务暴露的URL
         URL serviceUrl = new URL(protocolName, hostAddress, port, interfaceClass.getName(), map);
 
         if (serviceExists(serviceUrl)) {
@@ -177,6 +183,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                     interfaceClass.getName(), serviceUrl.getIdentity()), MotanErrorMsgConstant.FRAMEWORK_INIT_ERROR);
         }
 
+        // 服务注册到注册中心的URL
         List<URL> urls = new ArrayList<URL>();
 
         // injvm 协议只支持注册到本地，其他协议可以注册到local、remote
@@ -202,10 +209,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         for (URL u : urls) {
+            // 使注册的URL中内嵌服务暴露的URL信息，使用embed标识
             u.addParameter(URLParamType.embed.getName(), StringTools.urlEncode(serviceUrl.toFullStr()));
             registereUrls.add(u.createCopy());
         }
-
+        // 真正的Handler放在META-INF/services/com.weibo.api.motan.config.handler.ConfigHandler文件里面，
+        // ExtensionLoader通过反射的方式来获得真正Handler的实例
+        // 这种方式加载实例，一方面可以对实例做缓存，另一方面可以方便地切换Handler
         ConfigHandler configHandler = ExtensionLoader.getExtensionLoader(ConfigHandler.class).getExtension(MotanConstants.DEFAULT_VALUE);
 
         exporters.add(configHandler.export(interfaceClass, ref, urls));

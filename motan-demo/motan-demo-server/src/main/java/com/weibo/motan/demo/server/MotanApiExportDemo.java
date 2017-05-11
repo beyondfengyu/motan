@@ -22,6 +22,10 @@ import com.weibo.api.motan.config.RegistryConfig;
 import com.weibo.api.motan.config.ServiceConfig;
 import com.weibo.api.motan.util.MotanSwitcherUtil;
 import com.weibo.motan.demo.service.MotanDemoService;
+import com.weibo.motan.demo.service.MotanDemoService2;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MotanApiExportDemo {
 
@@ -35,7 +39,7 @@ public class MotanApiExportDemo {
         // 配置服务的group以及版本号
         motanDemoService.setGroup("motan-demo-rpc");
         motanDemoService.setVersion("1.0");
-
+        motanDemoService.setShareChannel(true);
         // 配置注册中心直连调用
         // RegistryConfig directRegistry = new RegistryConfig();
         // directRegistry.setRegProtocol("local");
@@ -50,12 +54,40 @@ public class MotanApiExportDemo {
 
         // 配置RPC协议
         ProtocolConfig protocol = new ProtocolConfig();
+        // 此处setId设置的值必须与setExport方法设置的值对应，
+        // 如果：id= motan，那么 export= motan:port
+        // 如果：id= motan2,那么 export= motan2:port
         protocol.setId("motan");
         protocol.setName("motan");
         motanDemoService.setProtocol(protocol);
 
+//        ProtocolConfig protocol2 = new ProtocolConfig();
+//        protocol2.setId("motan");
+//        protocol2.setName("motan2");
+////        motanDemoService.setProtocol(protocol);
+
+        List<ProtocolConfig> protocols = new ArrayList<ProtocolConfig>();
+        protocols.add(protocol);
+//        protocols.add(protocol2);
+        motanDemoService.setProtocols(protocols);
+
         motanDemoService.setExport("motan:8002");
         motanDemoService.export();
+
+
+        ServiceConfig<MotanDemoService2> motanDemoService2 = new ServiceConfig<MotanDemoService2>();
+
+        // 设置接口及实现类
+        motanDemoService2.setInterface(MotanDemoService2.class);
+        motanDemoService2.setRef(new MotanDemoServiceImpl2());
+        // 配置服务的group以及版本号
+        motanDemoService2.setGroup("motan-demo-rpc");
+        motanDemoService2.setVersion("1.0");
+        motanDemoService2.setRegistry(zookeeperRegistry);
+        motanDemoService2.setProtocols(protocols);
+        motanDemoService2.setShareChannel(true);
+        motanDemoService2.setExport("motan:8002");
+        motanDemoService2.export();
 
         MotanSwitcherUtil.setSwitcherValue(MotanConstants.REGISTRY_HEARTBEAT_SWITCHER, true);
 

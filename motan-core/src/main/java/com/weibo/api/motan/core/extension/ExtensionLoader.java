@@ -85,6 +85,11 @@ public class ExtensionLoader<T> {
         return extensionClasses.get(name);
     }
 
+    /**
+     *
+     * @param name 可以是Spi注解的name属性值，也可以是T的类名
+     * @return
+     */
     public T getExtension(String name) {
         checkInit();
 
@@ -163,7 +168,7 @@ public class ExtensionLoader<T> {
         if (init) {
             return;
         }
-
+        // 根据type属性的name值，从META-INF/services处加载类资源
         extensionClasses = loadExtensionClasses(PREFIX);
         singletonInstances = new ConcurrentHashMap<String, T>();
 
@@ -173,7 +178,7 @@ public class ExtensionLoader<T> {
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         checkInterfaceType(type);
-
+        // 从extensionLoaders缓存中获取该type对应的ExtensionLoader实例
         ExtensionLoader<T> loader = (ExtensionLoader<T>) extensionLoaders.get(type);
 
         if (loader == null) {
@@ -188,9 +193,9 @@ public class ExtensionLoader<T> {
 
         if (loader == null) {
             loader = new ExtensionLoader<T>(type);
-
+            // 保存到extensionLoaders中缓存
             extensionLoaders.putIfAbsent(type, loader);
-
+            // TODO 为什么不直接使用上面新建的loader，而要通过extensionLoaders再次获取呢？
             loader = (ExtensionLoader<T>) extensionLoaders.get(type);
         }
 
@@ -358,6 +363,8 @@ public class ExtensionLoader<T> {
                 if (map.containsKey(spiName)) {
                     failThrows(clz, ":Error spiName already exist " + spiName);
                 } else {
+                    // 使用SpiMeta注解的name值或者类名作为Map的key
+                    // 如果扩展类有SpiMeta的注解，那么获取对应的name，如果没有的话获取classname
                     map.put(spiName, clz);
                 }
             } catch (Exception e) {
@@ -381,7 +388,7 @@ public class ExtensionLoader<T> {
      */
     private String getSpiName(Class<?> clz) {
         SpiMeta spiMeta = clz.getAnnotation(SpiMeta.class);
-
+        // 使用SpiMeta注解的name值或者类名作为Map的key
         String name = (spiMeta != null && !"".equals(spiMeta.name())) ? spiMeta.name() : clz.getSimpleName();
 
         return name;

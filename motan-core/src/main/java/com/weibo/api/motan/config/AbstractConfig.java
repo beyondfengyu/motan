@@ -66,6 +66,12 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    /**
+     * 把methods列表中各个MethodConfig类的属性名和属性值保存到parameters中
+     *
+     * @param parameters
+     * @param methods
+     */
     protected static void collectMethodConfigParams(Map<String, String> parameters, List<MethodConfig> methods) {
         if (methods == null || methods.isEmpty()) {
             return;
@@ -84,7 +90,7 @@ public abstract class AbstractConfig implements Serializable {
     /**
      * 将config 参数录入Map中
      * 
-     * @param parameters
+     * @param parameters 保存Config类的属性，key为属性名，value为属性值
      */
     @SuppressWarnings("unchecked")
     protected void appendConfigParams(Map<String, String> parameters, String prefix) {
@@ -94,13 +100,17 @@ public abstract class AbstractConfig implements Serializable {
                 String name = method.getName();
                 if (isConfigMethod(method)) {
                     int idx = name.startsWith("get") ? 3 : 2;
+                    //如：name=getAddress,则prop=address
                     String prop = name.substring(idx, idx + 1).toLowerCase() + name.substring(idx + 1);
                     String key = prop;
                     ConfigDesc configDesc = method.getAnnotation(ConfigDesc.class);
+
+                    //如果方法名有ConfigDesc注解，并且ConfigDesc中key属性不为null,则使用注解中的key作为Map的key值
                     if (configDesc != null && !StringUtils.isBlank(configDesc.key())) {
                         key = configDesc.key();
                     }
 
+                    //反射获取该属性的值
                     Object value = method.invoke(this);
                     if (value == null || StringUtils.isBlank(String.valueOf(value))) {
                         if (configDesc != null && configDesc.required()) {
@@ -112,6 +122,8 @@ public abstract class AbstractConfig implements Serializable {
                     if (prefix != null && prefix.length() > 0) {
                         key = prefix + "." + key;
                     }
+
+                    //保存该Config类的属性名和属性值到parameters中
                     parameters.put(key, String.valueOf(value).trim());
                 } else if ("getParameters".equals(name) && Modifier.isPublic(method.getModifiers())
                         && method.getParameterTypes().length == 0 && method.getReturnType() == Map.class) {

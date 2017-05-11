@@ -44,6 +44,13 @@ public abstract class AbstractProtocol implements Protocol {
         return Collections.unmodifiableMap(exporterMap);
     }
 
+    /**
+     * 启动服务器，暴露服务接口
+     * @param provider  服务真正的提供者，远程请求会调用提供者执行方法获得结果
+     * @param url   服务的URL，包含服务的IP、端口、协议名、接口等信息
+     * @param <T>
+     * @return
+     */
     @SuppressWarnings("unchecked")
     @Override
     public <T> Exporter<T> export(Provider<T> provider, URL url) {

@@ -59,14 +59,25 @@ public class SimpleConfigHandler implements ConfigHandler {
 
     @Override
     public <T> T refer(Class<T> interfaceClass, List<Cluster<T>> clusters, String proxyType) {
+        // 此处留有一个扩展点，可以选择自己实现的其它代理方式，默认是JDK的动态代理
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension(proxyType);
         return proxyFactory.getProxy(interfaceClass, new RefererInvocationHandler<T>(interfaceClass, clusters));
     }
 
+    /**
+     * 启动服务器，暴露服务，并注册服务到注册中心
+     * @param interfaceClass 服务接口
+     * @param ref   服务实例
+     * @param registryUrls 注册中心的URL对象列表，一个服务可以注册到多个注册中心
+     * @param <T>
+     * @return
+     */
     @Override
     public <T> Exporter<T> export(Class<T> interfaceClass, T ref, List<URL> registryUrls) {
-
+        // 注册的URL中内嵌了服务URL的信息，用embed标识
+        // 对于一个服务的注册URL来说，内嵌的服务URL是一样的，所以registryUrls.get(0)获得某一个注册URL就可以得到服务URL
         String serviceStr = StringTools.urlDecode(registryUrls.get(0).getParameter(URLParamType.embed.getName()));
+        // 解析出内嵌在注册URL中的服务URL
         URL serviceUrl = URL.valueOf(serviceStr);
 
         // export service

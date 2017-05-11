@@ -14,23 +14,17 @@
  *    limitations under the License.
  */
 
-package com.weibo.api.motan.core.extension;
+package com.weibo.motan.demo.server;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.weibo.api.motan.config.springsupport.annotation.MotanService;
+import com.weibo.motan.demo.service.MotanDemoService2;
 
-/**
- * @author maijunsheng
- * @version 创建时间：2013-5-28
- * 
- */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface SpiMeta {
+@MotanService(export = "demoMotan:8001")
+public class MotanDemoServiceImpl2 implements MotanDemoService2 {
 
-    String name() default "";
+    public String hello2(String name) {
+        System.out.println(name);
+        return ">>>>>>>> Hello2 " + name + "!";
+    }
+
 }

@@ -108,6 +108,7 @@ public class DefaultRpcProtocol extends AbstractProtocol {
 
         @Override
         protected boolean doInit() {
+            // 启动服务器
             boolean result = server.open();
 
             return result;
