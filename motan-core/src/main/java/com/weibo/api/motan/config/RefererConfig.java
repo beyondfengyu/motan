@@ -124,10 +124,12 @@ public class RefererConfig<T> extends AbstractRefererConfig {
             params.put(URLParamType.version.getName(), URLParamType.version.getValue());
             params.put(URLParamType.refreshTimestamp.getName(), String.valueOf(System.currentTimeMillis()));
 
+            // 把basicReferer\exConfig\this的配置项存储到params对象
             collectConfigParams(params, protocol, basicReferer, extConfig, this);
             collectMethodConfigParams(params, this.getMethods());
 
             URL refUrl = new URL(protocol.getName(), localIp, MotanConstants.DEFAULT_INT_VALUE, interfaceClass.getName(), params);
+            // 创建ClusterSupport，并初始化
             ClusterSupport<T> clusterSupport = createClusterSupport(refUrl, configHandler, registryUrls);
 
             clusterSupports.add(clusterSupport);
@@ -142,6 +144,13 @@ public class RefererConfig<T> extends AbstractRefererConfig {
         initialized.set(true);
     }
 
+    /**
+     *
+     * @param refUrl        引用URL
+     * @param configHandler
+     * @param registryUrls  注册中心URL列表
+     * @return
+     */
     private ClusterSupport<T> createClusterSupport(URL refUrl, ConfigHandler configHandler, List<URL> registryUrls) {
         List<URL> regUrls = new ArrayList<URL>();
 
@@ -169,7 +178,8 @@ public class RefererConfig<T> extends AbstractRefererConfig {
                 }
             }
             regUrls.add(regUrl);
-        } else { // 通过注册中心配置拼装URL，注册中心可能在本地，也可能在远端
+        } else {
+            // 通过注册中心配置拼装URL，注册中心可能在本地，也可能在远端
             if (registryUrls == null || registryUrls.isEmpty()) {
                 throw new IllegalStateException(
                         String.format(
@@ -182,6 +192,7 @@ public class RefererConfig<T> extends AbstractRefererConfig {
         }
 
         for (URL url : regUrls) {
+            // 注册URL中内嵌引用URL信息，使用embed标识
             url.addParameter(URLParamType.embed.getName(), StringTools.urlEncode(refUrl.toFullStr()));
         }
         return configHandler.buildClusterSupport(interfaceClass, regUrls);

@@ -52,9 +52,9 @@ public class ClusterSupport<T> implements NotifyListener {
 
     private static ConcurrentHashMap<String, Protocol> protocols = new ConcurrentHashMap<String, Protocol>();
     private Cluster<T> cluster;
-    private List<URL> registryUrls;
-    private URL url;
-    private Class<T> interfaceClass;
+    private List<URL> registryUrls;  // 注册URL列表
+    private URL url;                 // 引用URL
+    private Class<T> interfaceClass; // 服务接口
     private Protocol protocol;
     private ConcurrentHashMap<URL, List<Referer<T>>> registryReferers = new ConcurrentHashMap<URL, List<Referer<T>>>();
 
@@ -62,15 +62,18 @@ public class ClusterSupport<T> implements NotifyListener {
     public ClusterSupport(Class<T> interfaceClass, List<URL> registryUrls) {
         this.registryUrls = registryUrls;
         this.interfaceClass = interfaceClass;
+        // 前面的代码已经把引用URL内嵌在注册URL的embed参数中
         String urlStr = StringTools.urlDecode(registryUrls.get(0).getParameter(URLParamType.embed.getName()));
+        // 解析出引用URL
         this.url = URL.valueOf(urlStr);
+        // 通过SPI方式获取相应的Protocol对象
         protocol = getDecorateProtocol(url.getProtocol());
     }
 
     public void init() {
-
+        // 初始化Cluster实例
         prepareCluster();
-
+        // 构建订阅节点对应的URL
         URL subUrl = toSubscribeUrl(url);
         for (URL ru : registryUrls) {
 
@@ -85,8 +88,9 @@ public class ClusterSupport<T> implements NotifyListener {
                 }
             }
 
-            // client 注册自己，同时订阅service列表
+            // client 注册自己，同时订阅服务URL
             Registry registry = getRegistry(ru);
+            // 订阅后触发监听器，引起notify方法调用，因为注册的watch就是this
             registry.subscribe(subUrl, this);
         }
 
@@ -137,10 +141,10 @@ public class ClusterSupport<T> implements NotifyListener {
 
     /**
      * <pre>
-     * 1 notify的执行需要串行
-     * 2 notify通知都是全量通知，在设入新的referer后，cluster需要把不再使用的referer进行回收，避免资源泄漏;
-     * 3 如果该registry对应的referer数量为0，而没有其他可用的referers，那就忽略该次通知；
-     * 4 此处对protoco进行decorator处理，当前为增加filters
+     *      1 notify的执行需要串行
+     *      2 notify通知都是全量通知，在设入新的referer后，cluster需要把不再使用的referer进行回收，避免资源泄漏;
+     *      3 如果该registry对应的referer数量为0，而没有其他可用的referers，那就忽略该次通知；
+     *      4 此处对protoco进行decorator处理，当前为增加filters
      * </pre>
      */
     @Override
