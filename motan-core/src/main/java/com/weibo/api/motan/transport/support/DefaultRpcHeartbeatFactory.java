@@ -73,6 +73,7 @@ public class DefaultRpcHeartbeatFactory implements HeartbeatFactory {
 
         @Override
         public Object handle(Channel channel, Object message) {
+            // 包装了对心跳消息的处理
             if (isHeartbeatRequest(message)) {
                 DefaultResponse response = new DefaultResponse();
                 response.setValue("heartbeat");

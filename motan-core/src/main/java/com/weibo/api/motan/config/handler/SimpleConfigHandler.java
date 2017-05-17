@@ -65,10 +65,14 @@ public class SimpleConfigHandler implements ConfigHandler {
     }
 
     /**
-     * 启动服务器，暴露服务，并注册服务到注册中心
+     *  暴露服务：
+     *      1、启动服务器提供通信能力；
+     *      2、注册服务URL到服务器的路由表，
+     *      3、注册服务URL到注册中心;
+     *
      * @param interfaceClass 服务接口
-     * @param ref   服务实例
-     * @param registryUrls 注册中心的URL对象列表，一个服务可以注册到多个注册中心
+     * @param ref            服务实例
+     * @param registryUrls   注册中心的URL对象列表，一个服务可以注册到多个注册中心
      * @param <T>
      * @return
      */
@@ -83,7 +87,9 @@ public class SimpleConfigHandler implements ConfigHandler {
         // export service
         // 利用protocol decorator来增加filter特性
         String protocolName = serviceUrl.getParameter(URLParamType.protocol.getName(), URLParamType.protocol.getValue());
+
         Protocol protocol = new ProtocolFilterDecorator(ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName));
+        // 服务真正的提供者，执行方法调用，一般是代理的对象
         Provider<T> provider = new DefaultProvider<T>(ref, serviceUrl, interfaceClass);
         Exporter<T> exporter = protocol.export(provider, serviceUrl);
 

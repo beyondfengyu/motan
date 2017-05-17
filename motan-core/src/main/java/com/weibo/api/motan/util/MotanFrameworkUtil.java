@@ -225,6 +225,7 @@ public class MotanFrameworkUtil {
 
     /**
      * serviceKey: group/interface/version
+     * 用于区分不同的service
      * 
      * @param group
      * @param interfaceName

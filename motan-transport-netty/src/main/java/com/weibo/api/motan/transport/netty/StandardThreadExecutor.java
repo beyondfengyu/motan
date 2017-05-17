@@ -35,11 +35,13 @@ import org.jboss.netty.util.internal.LinkedTransferQueue;
  * 		org.apache.catalina.core.StandardThreadExecutor
  * 
  * java.util.concurrent
- * threadPoolExecutor execute执行策略： 		优先offer到queue，queue满后再扩充线程到maxThread，如果已经到了maxThread就reject 
- * 						   		比较适合于CPU密集型应用（比如runnable内部执行的操作都在JVM内部，memory copy, or compute等等）
+ * threadPoolExecutor execute执行策略：
+ * 		优先offer到queue，queue满后再扩充线程到maxThread，如果已经到了maxThread就reject
+ * 		比较适合于CPU密集型应用（比如runnable内部执行的操作都在JVM内部，memory copy, or compute等等）
  * 
- * StandardThreadExecutor execute执行策略：	优先扩充线程到maxThread，再offer到queue，如果满了就reject 
- * 						      	比较适合于业务处理需要远程资源的场景
+ * StandardThreadExecutor execute执行策略：
+ * 		优先扩充线程到maxThread，再offer到queue，如果满了就reject
+ * 		比较适合于业务处理需要远程资源的场景
  * 
  * </pre>
  * 

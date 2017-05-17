@@ -111,10 +111,13 @@ public class RefererConfig<T> extends AbstractRefererConfig {
         List<Cluster<T>> clusters = new ArrayList<Cluster<T>>(protocols.size());
         String proxy = null;
 
+        // SPI方式获取ConfigHandler对象，方便扩展与切换
         ConfigHandler configHandler = ExtensionLoader.getExtensionLoader(ConfigHandler.class).getExtension(MotanConstants.DEFAULT_VALUE);
 
         List<URL> registryUrls = loadRegistryUrls();
+
         String localIp = getLocalHostAddress(registryUrls);
+
         for (ProtocolConfig protocol : protocols) {
             Map<String, String> params = new HashMap<String, String>();
             params.put(URLParamType.nodeType.getName(), MotanConstants.NODE_TYPE_REFERER);

@@ -137,8 +137,9 @@ public class ProtocolFilterDecorator implements Protocol {
 
     /**
      * 使用装饰者模式，增加Filter调用链
-     * @param provider
-     * @param url
+     *
+     * @param provider  服务提供者
+     * @param url       服务的URL
      * @param <T>
      * @return
      */
@@ -195,13 +196,13 @@ public class ProtocolFilterDecorator implements Protocol {
     /**
      * <pre>
 	 * 获取方式：
-	 * 1）先获取默认的filter列表；
-	 * 2）根据filter配置获取新的filters，并和默认的filter列表合并；
-	 * 3）再根据一些其他配置判断是否需要增加其他filter，如根据accessLog进行判断，是否需要增加accesslog
+	 *      1）先获取默认的filter列表；
+	 *      2）根据filter配置获取新的filters，并和默认的filter列表合并；
+	 *      3）再根据一些其他配置判断是否需要增加其他filter，如根据accessLog进行判断，是否需要增加accesslog
 	 * </pre>
      * 
      * @param url
-     * @param key
+     * @param key SpiMeta注解的name属性
      * @return
      */
     private List<Filter> getFilters(URL url, String key) {

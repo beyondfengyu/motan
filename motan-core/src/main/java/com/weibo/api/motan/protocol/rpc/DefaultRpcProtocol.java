@@ -50,7 +50,8 @@ import com.weibo.api.motan.util.MotanFrameworkUtil;
 @SpiMeta(name = "motan")
 public class DefaultRpcProtocol extends AbstractProtocol {
 
-    // 多个service可能在相同端口进行服务暴露，因此来自同个端口的请求需要进行路由以找到相应的服务，同时不在该端口暴露的服务不应该被找到
+    // 多个service可能在相同端口进行服务暴露，因此来自同个端口的请求需要进行路由以找到相应的服务，
+    // 同时不在该端口暴露的服务不应该被找到
     private Map<String, ProviderMessageRouter> ipPort2RequestRouter = new HashMap<String, ProviderMessageRouter>();
 
     @Override
@@ -71,11 +72,23 @@ public class DefaultRpcProtocol extends AbstractProtocol {
      */
     class DefaultRpcExporter<T> extends AbstractExporter<T> {
         private Server server;
+        /* 终端工厂类，用于初始化Server对象 */
         private EndpointFactory endpointFactory;
 
+        /**
+         *  构造函数主要做下面3件事：
+         *      1、启动一个服务器，用于提供通信功能，服务器标识为【ip:port】；
+         *      2、绑定Provider到一个ProviderMessageRouter对象；
+         *      3、绑定ProviderMessageRouter对象到上面的服务器；
+         *
+         * @param provider 服务提供者
+         * @param url      服务URL
+         */
         public DefaultRpcExporter(Provider<T> provider, URL url) {
             super(provider, url);
-
+            //TODO 这里存在一个问题就是，即使服务器初始化失败，这个接口一样可以被客户端访问;
+            //TODO 因为这个接口已经绑定到ProviderMessageRouter上了
+            // 每一个服务器进程对应一个ProviderMessageRouter
             ProviderMessageRouter requestRouter = initRequestRouter(url);
             endpointFactory =
                     ExtensionLoader.getExtensionLoader(EndpointFactory.class).getExtension(
@@ -127,6 +140,7 @@ public class DefaultRpcProtocol extends AbstractProtocol {
 
         private ProviderMessageRouter initRequestRouter(URL url) {
             ProviderMessageRouter requestRouter = null;
+            /** ip:port **/
             String ipPort = url.getServerPortStr();
 
             synchronized (ipPort2RequestRouter) {

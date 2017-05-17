@@ -66,6 +66,8 @@ public class NettyServer extends AbstractServer implements StatisticCallback {
 			Executors.newCachedThreadPool(new DefaultThreadFactory("nettyServerWorker", true)));
 
 	// 单端口需要对应单executor 1) 为了更好的隔离性 2) 为了防止被动releaseExternalResources:
+	// 策略：优先扩充线程到maxThread，再offer到queue，如果满了就reject
+ 	// 	     比较适合于业务处理需要远程资源的场景
 	private StandardThreadExecutor standardThreadExecutor = null;
 	
 	protected NettyServerChannelManage channelManage = null;
@@ -97,6 +99,7 @@ public class NettyServer extends AbstractServer implements StatisticCallback {
 		serverChannel = bootstrap.bind(new InetSocketAddress(url.getPort()));
 		state = ChannelState.ALIVE;
 
+		// 用于一些服务器状态统计功能
 		StatsUtil.registryStatisticCallback(this);
 		LoggerUtil.info("NettyServer ServerChannel finish Open: url=" + url);
 

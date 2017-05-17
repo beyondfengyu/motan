@@ -328,6 +328,7 @@ public class AbstractInterfaceConfig extends AbstractConfig {
         List<URL> registryList = new ArrayList<URL>();
         if (registries != null && !registries.isEmpty()) {
             for (RegistryConfig config : registries) {
+                // address可能包含多个地址，用分号隔开
                 String address = config.getAddress();
                 if (StringUtils.isBlank(address)) {
                     address = NetUtils.LOCALHOST + ":" + MotanConstants.DEFAULT_INT_VALUE;

@@ -45,9 +45,9 @@ public abstract class AbstractProtocol implements Protocol {
     }
 
     /**
-     * 启动服务器，暴露服务接口
+     *  启动服务器，暴露服务接口
      * @param provider  服务真正的提供者，远程请求会调用提供者执行方法获得结果
-     * @param url   服务的URL，包含服务的IP、端口、协议名、接口等信息
+     * @param url       服务URL，包含服务的IP、端口、协议名、接口等信息
      * @param <T>
      * @return
      */
@@ -64,6 +64,7 @@ public abstract class AbstractProtocol implements Protocol {
                     MotanErrorMsgConstant.FRAMEWORK_INIT_ERROR);
         }
 
+        // protocolKey形式如：protocol://host:port/group/interface/version
         String protocolKey = MotanFrameworkUtil.getProtocolKey(url);
 
         synchronized (exporterMap) {
@@ -75,6 +76,7 @@ public abstract class AbstractProtocol implements Protocol {
             }
 
             exporter = createExporter(provider, url);
+            // 启动服务器
             exporter.init();
 
             exporterMap.put(protocolKey, exporter);

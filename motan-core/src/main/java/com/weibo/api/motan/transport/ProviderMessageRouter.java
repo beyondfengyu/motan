@@ -71,7 +71,8 @@ public class ProviderMessageRouter implements MessageHandler {
         }
 
         Request request = (Request) message;
-
+        // 区分service的方式： group/interface/version
+        // serviceKey查找路由的凭证，在addProvider方法中加入
         String serviceKey = MotanFrameworkUtil.getServiceKey(request);
 
         Provider<?> provider = providers.get(serviceKey);
@@ -93,6 +94,7 @@ public class ProviderMessageRouter implements MessageHandler {
 
     protected Response call(Request request, Provider<?> provider) {
         try {
+            // 从这里可以看出，最终调用Provider对象的call方法来获取结果
             return provider.call(request);
         } catch (Exception e) {
             DefaultResponse response = new DefaultResponse();
@@ -106,7 +108,7 @@ public class ProviderMessageRouter implements MessageHandler {
         if (providers.containsKey(serviceKey)) {
             throw new MotanFrameworkException("provider alread exist: " + serviceKey);
         }
-
+        // serviceKey查找路由的凭证
         providers.put(serviceKey, provider);
 
         // 获取该service暴露的方法数：

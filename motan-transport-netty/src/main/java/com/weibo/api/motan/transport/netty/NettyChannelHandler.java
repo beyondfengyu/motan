@@ -136,6 +136,8 @@ public class NettyChannelHandler extends SimpleChannelHandler {
 	}
 
 	private void processRequest(ChannelHandlerContext ctx, Request request, long processStartTime) {
+		// 跟踪可以得出,handle方法就是ProviderMessageRouter的handle方法
+		// 最终会调用Provider的call方法
 		Object result = messageHandler.handle(serverChannel, request);
 
 		DefaultResponse response = null;

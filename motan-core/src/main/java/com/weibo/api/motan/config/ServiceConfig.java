@@ -114,15 +114,20 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         // 检查接口类是否正确，以及方法Bean列表是否对应接口类方法
         checkInterfaceAndMethods(interfaceClass, methods);
         // 解析RegisteryConfig类，获取注册相关信息存储到URL列表
-        // 一个服务可能在多个注册中心注册
+        // 服务信息可能在多个注册中心注册
         List<URL> registryUrls = loadRegistryUrls();
         if (registryUrls == null || registryUrls.size() == 0) {
             throw new IllegalStateException("Should set registry config for service:" + interfaceClass.getName());
         }
 
+        // 此处protocolPorts记录服务设置的协议配置，通过解析export属性得到；
+        // 其中key为协议ID，val为端口号；
         Map<String, Integer> protocolPorts = getProtocolAndPort();
 
-        // 此处可以看出，一个服务可以在多种协议中暴露，只要协议的ID等于Service暴露的协议名
+        // 服务可以在多种协议配置中暴露，暴露的标识通过export属性来设置；
+        // export是一个字符串类型，格式为【协议ID:端口,协议ID:端口,...】；
+        // 服务可以在不同的端口使用不同的协议配置来暴露，或者在不同的端口使用相同的协议配置暴露，
+        // 或者在相同的端口使用不同的协议配置暴露；
         for (ProtocolConfig protocolConfig : protocols) {
             Integer port = protocolPorts.get(protocolConfig.getId());
             if (port == null) {
@@ -148,8 +153,19 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
     }
 
+    /**
+     * 暴露服务：
+     *      1、启动服务器进程；
+     *      2、注册服务信息到服务器路由；
+     *      3、注册服务信息到注册中心；
+     *
+     * @param protocolConfig 协议配置
+     * @param port           服务所在服务器的端口
+     * @param registryURLs   注册中心的URL信息列表
+     */
     @SuppressWarnings("unchecked")
     private void doExport(ProtocolConfig protocolConfig, int port, List<URL> registryURLs) {
+        //TODO 协议配置中name属性就是URL类中的protocolName属性
         String protocolName = protocolConfig.getName();
         if (protocolName == null || protocolName.length() == 0) {
             protocolName = URLParamType.protocol.getValue();
@@ -173,9 +189,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         collectConfigParams(map, protocolConfig, basicService, extConfig, this);
         collectMethodConfigParams(map, this.getMethods());
 
-        // 服务暴露的URL
+        // 暴露的服务URL，每一个服务URL在系统中都是唯一的
         URL serviceUrl = new URL(protocolName, hostAddress, port, interfaceClass.getName(), map);
-
+        // 因为doExport方法放在协议配置轮询中，有可能上一次调用doExport成功暴露的URL还没有存入existingServices中；
+        // 所以即使serviceUrl跟之前暴露的URL相同，serviceExists判断为false，因为之前的URL还没有存入existingServices
         if (serviceExists(serviceUrl)) {
             LoggerUtil.warn(String.format("%s configService is malformed, for same service (%s) already exists ", interfaceClass.getName(),
                     serviceUrl.getIdentity()));
@@ -209,13 +226,13 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         for (URL u : urls) {
-            // 使注册的URL中内嵌服务暴露的URL信息，使用embed标识
+            // 注册URL中内嵌服务URL信息，使用embed标识
             u.addParameter(URLParamType.embed.getName(), StringTools.urlEncode(serviceUrl.toFullStr()));
             registereUrls.add(u.createCopy());
         }
-        // 真正的Handler放在META-INF/services/com.weibo.api.motan.config.handler.ConfigHandler文件里面，
-        // ExtensionLoader通过反射的方式来获得真正Handler的实例
-        // 这种方式加载实例，一方面可以对实例做缓存，另一方面可以方便地切换Handler
+        // 真正的Handler放在META-INF/services/com.weibo.api.motan.config.handler.ConfigHandler文件里面；
+        // ExtensionLoader加载实例是Motan实现的Spi功能，需要在被加载的类前加上SpiMeta标识;
+        // Spi功能有两方面的好处，一方面可以对实例做缓存，另一方面可以方便地切换实现类；
         ConfigHandler configHandler = ExtensionLoader.getExtensionLoader(ConfigHandler.class).getExtension(MotanConstants.DEFAULT_VALUE);
 
         exporters.add(configHandler.export(interfaceClass, ref, urls));
@@ -226,6 +243,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void afterExport() {
         exported.set(true);
         for (Exporter<T> ep : exporters) {
+            // doExport方法中需要使用existingServices判断服务有没有暴露，
+            // 如果有多个协议，那么协议循环中暴露的服务没有加到existingServices，
+            // 不能立刻发现可能会重复()的暴露的服务
             existingServices.add(ep.getProvider().getUrl().getIdentity());
         }
     }

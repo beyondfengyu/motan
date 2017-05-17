@@ -81,25 +81,35 @@ public abstract class  AbstractEndpointFactory implements EndpointFactory {
         heartbeatClientEndpointManager.init();
     }
 
+    /**
+     *
+     * @param url
+     * @param messageHandler RequestRouter，每一个服务器进程对应一个ProviderMessageRouter
+     * @return
+     */
     @Override
     public Server createServer(URL url, MessageHandler messageHandler) {
         HeartbeatFactory heartbeatFactory = getHeartbeatFactory(url);
+        // 包装了对心跳消息的处理
         messageHandler = heartbeatFactory.wrapMessageHandler(messageHandler);
 
         synchronized (ipPort2ServerShareChannel) {
             String ipPort = url.getServerPortStr();
+            // 形式如：protocol://host:port/group/interface/version
             String protocolKey = MotanFrameworkUtil.getProtocolKey(url);
 
             boolean shareChannel =
                     url.getBooleanParameter(URLParamType.shareChannel.getName(), URLParamType.shareChannel.getBooleanValue());
 
-            if (!shareChannel) { // 独享一个端口
+            // 独占端口
+            if (!shareChannel) {
                 LoggerUtil.info(this.getClass().getSimpleName() + " create no_share_channel server: url={}", url);
 
                 // 如果端口已经被使用了，使用该server bind 会有异常
                 return innerCreateServer(url, messageHandler);
             }
 
+            // 共享端口
             LoggerUtil.info(this.getClass().getSimpleName() + " create share_channel server: url={}", url);
 
             Server server = ipPort2ServerShareChannel.get(ipPort);
@@ -174,6 +184,13 @@ public abstract class  AbstractEndpointFactory implements EndpointFactory {
         }
     }
 
+    /**
+     *
+     * @param map
+     * @param endpoint  Server
+     * @param namespace  形式如：protocol://host:port/group/interface/version
+     * @param <T>
+     */
     private <T> void saveEndpoint2Urls(ConcurrentMap<T, Set<String>> map, T endpoint, String namespace) {
         Set<String> sets = map.get(endpoint);
 

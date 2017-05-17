@@ -29,6 +29,11 @@ import com.weibo.api.motan.exception.MotanServiceException;
 import com.weibo.api.motan.util.MotanFrameworkUtil;
 
 /**
+ * =============
+ *      URL包含了协议、地址、端口、接口名等信息，用于描述注册中心和服务的信息：
+ *      1、注册中心的类型、地址及注册的数据；
+ *      2、服务提供者的地址、组名、版本、接口等；
+ *
  * <pre>
  * Desc a reffer or a service.
  * 所有获取URL的parameter时（即带参数的getXXX方法），都必须返回对象,避免不经意的修改引发错误，因为
